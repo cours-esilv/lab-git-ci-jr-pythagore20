@@ -1,29 +1,38 @@
-# Installe java 8 sur l'agent
-- name: Set up JDK 8
-  uses: actions/setup-java@v2
-  with:
-    java-version: '8'
-    distribution: 'adopt'
+name: main
 
-# Compile notre application
-- name: Build with Maven
-  run: mvn --batch-mode --update-snapshots package
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
 
-# Publie les résultats de test
-- name: Publish Unit Test Results
-  uses: EnricoMi/publish-unit-test-result-action@v1
-  if: always()
-  with:
-    files: target/**/*.xml
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-# Installe la commande docker sur l'agent
-- name: Install Docker
-  uses: docker/setup-buildx-action@v1
-  id: buildx
-  with:
-    install: true
+    steps:
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
 
-# Build l'image Docker
-- name: Docker build
-  run: |
-    docker build .
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots package
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: target/**/*.xml
+
+      - name: Install Docker
+        uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+
+      - name: Docker build
+        run: |
+          docker build .
+
